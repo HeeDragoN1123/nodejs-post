@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "dev": "nodemon app.js",
     "format": "prettier --write *.js **/*.js"
   },
   "dependencies": {
@@ -21,3 +22,5 @@
   "repository": "git@github.com:HeeDragoN1123/nodejs-post.git",
   "author": "HeeDragoN1123 <yhy7952@gmail.com>"
 }
+
+

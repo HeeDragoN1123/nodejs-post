@@ -6,6 +6,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  // MySQL 데이터베이스 엔진을 사용합니다.
+  provider = "mysql"
+  // 데이터베이스 연결 정보를 .env 파일의 DATABASE_URL 로부터 읽어옵니다.
   url      = env("DATABASE_URL")
 }
+
+
