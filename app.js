@@ -1,6 +1,6 @@
 import express from 'express';
 import connect from './schmas/index.js'
-// import postRouter from './routes/post.router.js'
+ import postRouter from './routes/post.router.js'
 // import commnetRouter from './routes/comments.router.js'
 import routes from './routes/index.js'
 const app = express();
@@ -22,10 +22,8 @@ app.use(express.urlencoded({ extended: true }));
 // app.use('/api',routes.postRouter);
 
 
-app.use('/api', [routes.commnetRouter, routes.postRouter]);
+app.use('/api', [routes.commnetRouter, routes.postRouter ]);
 
 app.listen(PORT, () => {
   console.log(PORT, '포트로 서버가 열렸어요!');
 });
-
-
