@@ -13,3 +13,33 @@ datasource db {
 }
 
 
+
+// 포스트 테이블 정의
+
+model Posts {
+  postId    Int      @id @default(autoincrement()) @map("postId")
+  user      String   @map("user")
+  title     String   @map("title")
+  content   String   @map("content") @db.Text
+  password  String   @map("password")
+  createdAt DateTime @default(now()) @map("createdAt")
+
+  comments  Comments[] @relation("PostsToComments")
+
+  @@map("Posts")
+}
+
+// 코멘트 테이블 정의
+
+model Comments {
+  commentId Int      @id @default(autoincrement()) @map("commentId") 
+  postId    Int      @map("postId")
+  user      String   @map("user")
+  password  String   @map("password")
+  content   String   @map("content") @db.Text
+  createdAt DateTime @default(now()) @map("createdAt") 
+ 
+  posts  Posts    @relation("PostsToComments", fields: [postId], references: [postId]) // Posts 모델과의 관계
+  
+  @@map("Comments")
+}
