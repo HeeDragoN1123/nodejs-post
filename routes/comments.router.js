@@ -1,7 +1,8 @@
 
 import express from 'express';
 import schemaComment from '../schmas/comments.schema.js'
-
+import { prisma } from '../utils/prisma/index.js';
+import { PrismaClientRustPanicError } from '@prisma/client/runtime/library.js';
 
 //express.js 라우터 생성
 
@@ -11,29 +12,27 @@ const router = express.Router();
 
 /* 댓글 생성 API */
 
-router.post('/posts/:_postId/comments', async(req,res,next) =>{
+router.post('/posts/:postId/comments', async(req,res,next) =>{
 try{
-    const {_postId} =req.params
+    const {postId} =req.params
     //console.log(_postId);
-    const { password, user, content } = req.body
+    const { user, password, content } = req.body
 
     if(!content){
         return res.status(400).json({ Message : '댓글 내용을 입력해주세요'})
     }
 
 
-    const newComment = new schemaComment({
-        postId : _postId,
-        user,
-        password,
-        content,
-        createdAt : new Date()
+    const newComment = await prisma.Comments.create({
+        data : {
+            user,
+            password,
+            content,
+            createdAt : new Date(),
+            postId : +postId
+        }
 
     })
-
-
-    await newComment.save();
-
 
     res.status(201).json({message:'댓글을 생성하였습니다.'})
 }catch(err){
@@ -44,25 +43,26 @@ try{
 });
 
 
+
+
 /* 댓글 목록 조회 */
 
-router.get('/posts/:_postId/comments', async(req, res, next) =>{
+router.get('/posts/:postId/comments', async(req, res, next) =>{
     try{
 
-        const cheakcomment = await schemaComment.find().sort({createdAt : -1}).exec(); 
-
-
-        const mapCheakcomment = cheakcomment.map(comment =>({
-            return:{
-                commentId : comment._id,
-                user: comment.user,
-                content : comment.content,
-                createdAt: comment.createdAt 
-            }
-
-        }));
+        const cheakcomment = await prisma.Comments.findMany({
+            select  : {
+                commentId : true,
+                user: true,
+                content : true,
+                createdAt: true
+            },
+            orderBy: {
+                createdAt: 'desc', // createdAt을 내림차순으로 정렬
+            },
+        })
         
-        return res.status(200).json( mapCheakcomment );
+        return res.status(200).json( cheakcomment );
 
     }catch(err){
         console.error(err);
@@ -74,19 +74,22 @@ router.get('/posts/:_postId/comments', async(req, res, next) =>{
 
 
 
+
 /* 댓글 수정 */
 
-router.put('/posts/:_postId/comments/:_commentId', async(req,res,next)=>{
+router.put('/posts/:postId/comments/:commentId', async(req,res,next)=>{
     try{
-        const {_commentId} = req.params;
+        const {commentId} = req.params;
         const {password , content} = req.body
         
-        const editcomment = await schemaComment.findById(_commentId).exec();
+        const editcomment = await prisma.Comments.findUnique({
+            where: {commentId : +commentId}
+        });
     
         if(!content){
             return res.status(400).json({ Message : '댓글 내용을 입력해주세요'})
         }
-        if(!_commentId){
+        if(!commentId){
             return res.status(404).json({ Message : '댓글 조회에 실패하였습니다.'})
         }
         if(editcomment.password !== password){
@@ -94,9 +97,13 @@ router.put('/posts/:_postId/comments/:_commentId', async(req,res,next)=>{
         }
     
     
-        editcomment.content = content;
-    
-        await editcomment.save();
+        await prisma.Comments.update({
+            data : {content},
+            where : {
+                commentId : +commentId,
+                password,
+            }
+        });
         
         return res.status(200).json({massege: '댓글이 수정되었습니다.'})
     }catch(err){
@@ -111,15 +118,21 @@ router.put('/posts/:_postId/comments/:_commentId', async(req,res,next)=>{
 
 /* 댓글 삭제 */
 
-router.delete('/posts/:_postId/comments/:_commentId', async(req,res,next) => {
+router.delete('/posts/:_postId/comments/:commentId', async(req,res,next) => {
 try{
-    const {_commentId} = req.params;
+    const {commentId} = req.params;
     const {password} = req.body;
 
 
-    const  deletecomment = await schemaComment.findById(_commentId).exec();
+    const deletecomment = await prisma.Comments.findUnique({
+        where: {
+            commentId : +commentId,
+            password
+        }
+    });
 
-    if(!_commentId){
+
+    if(!commentId){
         return res.status(404).json({message : '댓글 조회에 실패하였습니다.'})
     }
     if(deletecomment.password !== password){
@@ -127,7 +140,12 @@ try{
     }
 
 
-    await deletecomment.deleteOne({password: _commentId});
+    await prisma.Comments.delete({
+        where : {
+            commentId : +commentId,
+            password,
+        }
+    });
     
 
     return res.status(200).json({message : '댓글을 삭제하였습니다.'});
@@ -138,10 +156,6 @@ try{
 }
 
 });
-
-
-
-
 
 
 

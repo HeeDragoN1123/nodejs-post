@@ -40,7 +40,7 @@ router.get('/posts',  async(req, res, next) => {
 
     const cheakpost = await prisma.posts.findMany({
         select :{
-            postId : true,  // _id 를 postId로 변경 _id 
+            postId : true, 
             user: true,
             title : true,
             createdAt: true
