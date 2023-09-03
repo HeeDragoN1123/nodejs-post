@@ -98,7 +98,7 @@ router.put('/posts/:_postId/comments/:_commentId', async(req,res,next)=>{
     
         await editcomment.save();
         
-        return res.status(200).json({massege: '댓글이 수정되었습니다.'})
+        return res.status(200).json({massege: '댓글이 수정되었습니다!!!!.'})
     }catch(err){
         console.error(err);
         return res.status(400).send({message : '데이터 형식이 올바르지 않습니다.'}) 
