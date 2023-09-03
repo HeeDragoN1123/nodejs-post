@@ -7,28 +7,29 @@ const router = express.Router();
 
 /* 게시판 등록  API*/
 
-router.post('/posts', async(req,res, next) =>{
-try{
-    const {title, user, password , content } = req.body
-    
-    
-    const newPost = new Schemapost({
-        user,
-        password,
-        title,
-        content,
-        createdAt : new Date()
-
-    })
-    await newPost.save();
-    res.status(201).json({message:'개시글을 생성하였습니다'})
-}catch(err){
-    console.error(err);
-    return res.status(400).json({message : '데이터 형식이 올바르지 않습니다.'})
-}
-
-    
-}); 
+router.post('/posts', async (req, res, next) => {
+    try {
+      const { title, user, password, content } = req.body;
+  
+      const newPost = await prisma.posts.create({
+        data: {
+          user,
+          password,
+          title,
+          content,
+          createdAt: new Date(),
+        },
+      });
+  
+      // res.status(201).json({newPost})
+      res.status(201).json({ message: '개시글을 생성하였습니다' });
+    } catch (err) {
+      console.error(err);
+      return res
+        .status(400)
+        .json({ message: '데이터 형식이 올바르지 않습니다.' });
+    }
+  });
 
 
 /* 게시판 목록 조회 */
