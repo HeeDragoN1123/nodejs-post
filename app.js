@@ -17,7 +17,8 @@ app.use(express.urlencoded({ extended: true }));
 // app.use('/api', routes.commnetRouter);
 // app.use('/api',routes.postRouter);
 
-app.use('/api', [routes.commnetRouter, routes.postRouter]);
+// 코멘트 라우터(맨) 앞에 미들웨어를 생성해서 걸러지게 만듬
+app.use('/api', [routes.postRouter,routes.commnetRouter]);
 
 app.listen(PORT, () => {
   console.log(PORT, '포트로 서버가 열렸어요!');

@@ -8,6 +8,17 @@ const router = express.Router();
 router.post('/posts', async (req, res, next) => {
   try {
     const { title, user, password, content } = req.body;
+    
+    if(!content){
+      return res.status(400).json({message : "댓글 내용을 입력해주세요"})
+  }
+  
+
+  // 질문 1  400 번 오류 위치  그리고 그럼 catch 에 무엇을 써야하는가?
+  // if(!postId||!user||!password){
+  //   return res.status(400).json({message : "데이터 형식이 올바르지 않습니다."})
+  // }
+
 
     const newPost = await prisma.posts.create({
       data: {
@@ -18,6 +29,7 @@ router.post('/posts', async (req, res, next) => {
         createdAt: new Date(),
       },
     });
+
 
     // res.status(201).json({newPost})
     res.status(201).json({ message: '개시글을 생성하였습니다' });
