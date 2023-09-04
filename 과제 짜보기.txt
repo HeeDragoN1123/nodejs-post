@@ -39,3 +39,6 @@
 
 
 깃 프리즈마로 브랜치 이동
+
+# package.json에 작성된 format 스크립트를 실행합니다.
+yarn run format
