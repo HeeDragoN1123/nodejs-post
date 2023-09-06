@@ -1,6 +1,6 @@
 
 import jwt from 'jsonwebtoken';
-
+import { prisma } from '../utils/prisma/index.js';
 
 export default async function (req, res, next) {
   try {
@@ -13,9 +13,21 @@ export default async function (req, res, next) {
       throw new Error('토큰 타입이 일치하지 않습니다.');
 
     const decodedToken = jwt.verify(token, 'customized_secret_key');
+   
     const userId = decodedToken.userId;
 
+    const user = await prisma.users.findFirst({
+        where : { userId : +userId}
+    })
+    if(!user){
+        res.clearCookie('authorization');
+        throw new Error(`토큰 사용자가 존재하지 않습니다.`)
+    }
+
+    req.user = user;
+
     next();
+
   } catch (error) {
     res.clearCookie('authorization');
 
@@ -32,31 +44,3 @@ export default async function (req, res, next) {
     }
   }
 }
-
-// src/routes/users.route.js
-
-/** 사용자 조회 API **/
-router.get('/users', authMiddleware, async (req, res, next) => {
-  const { userId } = req.user;
-
-  const user = await prisma.users.findFirst({
-    where: { userId: +userId },
-    select: {
-      userId: true,
-      email: true,
-      createdAt: true,
-      updatedAt: true,
-      UserInfos: {
-        // 1:1 관계를 맺고있는 UserInfos 테이블을 조회합니다.
-        select: {
-          name: true,
-          age: true,
-          gender: true,
-          profileImage: true,
-        },
-      },
-    },
-  });
-
-  return res.status(200).json({ data: user });
-});

@@ -32,11 +32,11 @@ model Users {
 
 model Posts {
   postId    Int      @id @default(autoincrement()) @map("postId")
-  UserId Int @map("UserId") // 사용자는 여러개의 게시글을 가질수있기 떄문에 유니크를 제외
-  nickname      String   @map("nickname")
+  UserId Int @map("userId") // 사용자는 여러개의 게시글을 가질수있기 떄문에 유니크를 제외
+  nickname   String   @map("nickname")
   title     String   @map("title")
   content   String   @map("content") @db.Text
-  password  String   @map("password")
+ // password  String   @map("password")
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
@@ -50,10 +50,10 @@ model Posts {
 
 model Comments {
   commentId Int      @id @default(autoincrement()) @map("commentId")
-  UserId Int @map("UserId") // 사용자는 여러개의 게시글을 가질수있기 떄문에 유니크를 제외 
+  UserId Int @map("userId") // 사용자는 여러개의 게시글을 가질수있기 떄문에 유니크를 제외 
   postId    Int      @map("postId")
   nickname      String   @map("nickname")
-  password  String   @map("password")
+  //password  String   @map("password")
   content   String   @map("content") @db.Text
   createdAt DateTime @default(now()) @map("createdAt") 
   updatedAt DateTime @updatedAt @map("updatedAt")

@@ -18,7 +18,7 @@ const PORT = 3000;
 // const router = express.Router();
 
 //실행 할 미들웨어
-app.use(logMiddleware);
+// app.use(logMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());

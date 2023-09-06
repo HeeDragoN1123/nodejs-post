@@ -1,13 +1,17 @@
 import express from 'express';
+import authMiddleware from '../middlewares/auth.middleware.js';
 import { prisma } from '../utils/prisma/index.js';
+
 
 const router = express.Router();
 
 /* 게시판 등록  API*/
 
-router.post('/posts', async (req, res, next) => {
+router.post('/posts', authMiddleware, async (req, res, next) => {
   try {
-    const { title, user, password, content } = req.body;
+    const { userId, nickname } = req.user;
+
+    const { title, content } = req.body;
     
     if(!content){
       return res.status(400).json({message : "댓글 내용을 입력해주세요"})
@@ -22,11 +26,12 @@ router.post('/posts', async (req, res, next) => {
 
     const newPost = await prisma.posts.create({
       data: {
-        user,
-        password,
+        UserId : userId, 
+        nickname,
         title,
         content,
         createdAt: new Date(),
+        updatedAt: new Date(),
       },
     });
 
@@ -41,14 +46,17 @@ router.post('/posts', async (req, res, next) => {
   }
 });
 
+
+
 /* 게시판 목록 조회 */
 router.get('/posts', async (req, res, next) => {
   const cheakpost = await prisma.posts.findMany({
     select: {
       postId: true,
-      user: true,
+      nickname: true,
       title: true,
       createdAt: true,
+      updatedAt: true,
     },
     orderBy: {
       createdAt: 'desc', // createdAt을 내림차순으로 정렬
@@ -71,6 +79,7 @@ router.get('/posts/:postId', async (req, res, next) => {
         user: true,
         content: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
 
