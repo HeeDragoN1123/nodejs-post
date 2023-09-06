@@ -14,7 +14,7 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
   try {
     const {userId , nickname} = req.user;
     const { postId } = req.params;
-    const { content } = req.body;
+    const { comment } = req.body;
 
 
     const post = await prisma.posts.findFirst({where: {postId: +postId} });
@@ -29,7 +29,7 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
         UserId : +userId, 
         postId: +postId,
         nickname,
-        content,
+        comment,
         createdAt: new Date(),
         updatedAt: new Date(),
         
@@ -67,7 +67,7 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
         commentId: true,
         UserId : true, 
         nickname: true,
-        content: true,
+        comment: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -90,14 +90,14 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
 router.put('/posts/:postId/comments/:commentId', async (req, res, next) => {
   try {
     const { postId,commentId } = req.params;
-    const { content } = req.body;
+    const { comment } = req.body;
 
     const editcomment = await prisma.Comments.findUnique({
       where: { commentId: +commentId },
     });
 
 
-    if (!content) {
+    if (!comment) {
       return res.status(400).json({ Message: '댓글 내용을 입력해주세요' });
     }
     if (!commentId) {
@@ -105,7 +105,7 @@ router.put('/posts/:postId/comments/:commentId', async (req, res, next) => {
     }
     
     await prisma.Comments.update({
-      data: { content },
+      data: { comment },
       where: {
         commentId: +commentId,
       },

@@ -109,13 +109,6 @@ router.put('/posts/:postId', async (req, res, next) => {
       return res.status(404).json({ message: '게시글 수정에 실패하였습니다.' });
     }
 
-    // if (editpost.UserId !== userId) {
-    //   return res.status(401).json({ message: '게시글을 수정할 권한이 없습니다.' });
-    // }
-
-    // if (editpost.password !== password) {
-    //   return res.status(401).json({ message: '비밀번호가 일치하지 않습니다.' });
-    // }
 
     await prisma.posts.update({
       data: { title, content },
@@ -139,13 +132,13 @@ router.delete('/posts/:postId', async (req, res, next) => {
   try {
     const {userId} = req.user;
     const { postId } = req.params;
-  //  const { password } = req.body;
+
 
     /* postId 찾기 */
     const deletepost = await prisma.posts.findUnique({
       where: {
         postId: +postId,
-      //  password,
+        
       },
     });
 
@@ -155,19 +148,10 @@ router.delete('/posts/:postId', async (req, res, next) => {
     }
 
 
-    // if (deletepost.UserId !== userId) {
-    //   return res.status(401).json({ message: '게시글을 삭제할 권한이 없습니다.' });
-    // }
-
-    // if (deletepost.password !== password) {
-    //   return res.status(400).json({ message: '비밀번호가 맞지 않습니다.' });
-    // }
-
     /* 조건을 통과하면 게시글 삭제 */
     await prisma.posts.delete({
       where: {
         postId: +postId,
-     //   password,
       },
     });
 
