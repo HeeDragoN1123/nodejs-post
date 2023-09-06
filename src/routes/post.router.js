@@ -14,11 +14,6 @@ router.post('/posts', async (req, res, next) => {
   }
   
 
-  // 질문 1  400 번 오류 위치  그리고 그럼 catch 에 무엇을 써야하는가?
-  // if(!postId||!user||!password){
-  //   return res.status(400).json({message : "데이터 형식이 올바르지 않습니다."})
-  // }
-
 
     const newPost = await prisma.posts.create({
       data: {
