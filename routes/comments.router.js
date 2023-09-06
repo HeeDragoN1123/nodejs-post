@@ -21,9 +21,9 @@ router.post('/posts/:postId/comments', async (req, res, next) => {
 
     // 미들웨어를 사용해보자 (공부) postId를 댓글 API 전체에 추가하는것 보다 미들웨어를 사용해서 전부 적용되게 만듬
     // throw ? 를 사용 (공부) throw 를 사용해서 지금 캐치 부분을 바꾸지 않고 try에서 게시글에 내용이 작성되지 않으면 400번 에러를 내도록 만듬
+
+
     
-
-
     // 질문 3
     // 지금 try catch 문을 제가 뭔가 잘못쓰고 있나요?
     // if(!user || !password || !content){
