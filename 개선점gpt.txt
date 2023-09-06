@@ -19,3 +19,6 @@
     // });
 
     // if(!post) return res.status(400).json({message:'존재하지 않는 게시물 입니다.'})
+
+
+오류 수정 시작
