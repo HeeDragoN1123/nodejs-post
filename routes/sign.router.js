@@ -4,6 +4,7 @@ import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+//import sign from '../middlewares/joi.js'
 
 const router = express.Router();
 
@@ -20,11 +21,7 @@ try{
     if (isExistUser) {
       return res.status(409).json({ message: '중복된 닉네임입니다.' });
     }
-  
-    if(password.length <=4 && password == nickname){
-      return res.status(409).json({ message: '회원가입에 실패하셨습니다.' });
-    }
-  
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedConfirm = await bcrypt.hash(confirm, 10);
     
