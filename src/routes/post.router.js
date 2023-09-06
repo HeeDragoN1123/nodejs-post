@@ -3,6 +3,22 @@ import { prisma } from '../utils/prisma/index.js';
 
 const router = express.Router();
 
+
+
+
+
+
+/* 로그인 API */
+
+router.post('/login', async(req,res,next) =>{
+  
+})
+
+
+
+
+
+
 /* 게시판 등록  API*/
 
 router.post('/posts', async (req, res, next) => {
