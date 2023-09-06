@@ -1,112 +1,21 @@
+    // if (!content) {
+    //   return res.status(400).json({ Message: '댓글 내용을 입력해주세요' });
+    // }
 
-당신의 코드는 Express 프레임워크를 사용하여 게시판과 관련된 CRUD(Create, Read, Update, Delete) API를 구현한 것 같습니다. 아래에서 코드를 한 부분씩 리뷰하고 각 부분에 대한 설명과 개선점을 제시해보겠습니다.
-
-게시판 등록 API:
-새 게시물을 생성하는 엔드포인트로 보입니다.
-새 Schemapost 객체를 생성하고 저장하는데, createdAt 필드를 현재 날짜로 설정하고 저장합니다.
-개선점:
-try 블록 내에서 catch 블록을 사용하는데, catch 블록에 err 파라미터가 없어서 
-오류가 발생할 경우 오류 정보를 사용할 수 없습니다. catch (err)로 수정하면 좋습니다.
------ catch(err)
+    // 미들웨어를 사용해보자 (공부) postId를 댓글 API 전체에 추가하는것 보다 미들웨어를 사용해서 전부 적용되게 만듬
+    // throw ? 를 사용 (공부) throw 를 사용해서 지금 캐치 부분을 바꾸지 않고 try에서 게시글에 내용이 작성되지 않으면 400번 에러를 내도록 만듬
 
 
-게시판 목록 조회 API:
-게시물 목록을 역순으로 정렬하여 반환합니다.
-mapCheakpost 객체의 형태로 게시물 목록을 변환합니다.
-개선점:
-mapCheakpost 객체는 응답 객체 안에 포함될 필요가 없습니다. 바로 배열을 
-반환하는 것이 응답 구조를 단순화할 수 있습니다.
+    
+    // 질문 3
+    // 지금 try catch 문을 제가 뭔가 잘못쓰고 있나요?
+    // if(!user || !password || !content){
+    //   return res.status(400).json({ message: '데이터 형식이 올바르지 않습니다.' });
+    // }
 
 
+    // const post = await prisma.posts.findFirst({
+    //   where: { postId: +postId },
+    // });
 
-
-게시글 상세 조회 API:
-특정 게시물을 ID를 통해 조회하는 엔드포인트입니다.
-해당 게시물을 찾아 mapCheak1post 형태로 반환합니다.
-개선점:
-catch 블록에 err 파라미터를 추가하여 오류 정보를 활용할 수 있도록 합니다.
-
-
-
-
-
-게시글 수정 API:
-게시물을 수정하는 엔드포인트입니다.
-요청된 게시물 ID를 사용하여 해당 게시물을 찾고, 비밀번호를 확인한 후에 게시물을 수정합니다.
-개선점:
-업데이트에 성공하면 응답 메시지에 오타가 있습니다. massege를 message로 수정해야 합니다.
-
-
-
-게시글 삭제 API:
-게시물을 삭제하는 엔드포인트입니다.
-해당 게시물을 찾아 비밀번호를 확인한 후에 게시물을 삭제합니다.
-개선점:
-게시물 삭제 시, MongoDB의 deleteOne 메서드를 사용할 때 조건이 잘못 지정되었습니다.
-올바른 조건을 사용하여 삭제해야 합니다.
-업데이트에 성공하면 응답 메시지에 오타가 있습니다. massege를 message로 수정해야 합니다.
-위의 개선점을 참고하여 코드를 조금 더 안정적이고 명확하게 만들어보세요. 
-또한, 데이터 유효성 검사 및 에러 핸들링에 대한 고려도 중요합니다.
-
-
-------------------------------------------------------------------------------------------------
-
-댓글 생성 API:
-
-특정 게시물에 댓글을 생성하는 엔드포인트입니다.
-댓글 생성 시, content 필드가 비어있는지 확인하여 빈 댓글을 생성하지 않도록 처리하고 있습니다.
-개선점:
-catch 블록 내에서 err 파라미터가 없어서 오류가 발생할 경우 오류 정보를 사용할 수 없습니다.
- catch (err)로 수정하면 좋습니다.
-
-
-
-댓글 목록 조회 API:
-특정 게시물의 댓글 목록을 역순으로 정렬하여 반환합니다.
-개선점:
-mapCheakcomment 내의 객체를 정의할 때 return 키워드를 사용하지 않아야 합니다.
- 현재 { return: {...} }와 같은 형태가 되고 있습니다. 단순히 중괄호 내에 객체를 반환하면 됩니다.
-
-router.get('/post/:_postId/comments', async (req, res, next) => {
-    try {
-        const cheakcomment = await schemaComment.find().sort({ createdAt: -1 }).exec();
-
-        const mapCheakcomment = cheakcomment.map(comment => ({
-            commentId: comment._id,
-            user: comment.user,
-            content: comment.content,
-            createdAt: comment.createdAt
-        }));
-
-        return res.status(200).json(mapCheakcomment); // return 키워드 삭제
-    } catch (err) {
-        console.error(err);
-        return res.status(400).send({ message: '데이터 형식이 올바르지 않습니다.' });
-    }
-});
-
-
-
-
-
-
-
-댓글 수정 API:
-특정 댓글을 수정하는 엔드포인트입니다.
-수정 시, content 필드가 비어있는지 확인하여 빈 댓글을 생성하지 않도록 처리하고 있습니다.
-개선점:
-!_commentId로 댓글 조회에 실패한 경우의 오류 처리를 할 수 있지만,
- _commentId가 존재하는 경우에도 오류 처리가 필요합니다.
-
-       if (!editcomment) {
-            return res.status(404).json({ Message: '댓글 조회에 실패하였습니다.' });
-        }
-
-
-댓글 삭제 API:
-특정 댓글을 삭제하는 엔드포인트입니다.
-개선점:
-댓글 삭제 시, MongoDB의 deleteOne 메서드를 사용할 때 조건이 잘못 지정되었습니다. 
-올바른 조건을 사용하여 삭제해야 합니다.
-위의 개선점을 참고하여 코드를 조금 더 안정적이고 명확하게 만들어보세요. 
-또한, 데이터 유효성 검사 및 에러 핸들링에 대한 고려도 중요합니다.
+    // if(!post) return res.status(400).json({message:'존재하지 않는 게시물 입니다.'})
