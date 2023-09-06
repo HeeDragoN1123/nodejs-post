@@ -33,7 +33,7 @@ model Users {
 model Posts {
   postId    Int      @id @default(autoincrement()) @map("postId")
   UserId Int @map("UserId") // 사용자는 여러개의 게시글을 가질수있기 떄문에 유니크를 제외
-  user      String   @map("user")
+  nickname      String   @map("nickname")
   title     String   @map("title")
   content   String   @map("content") @db.Text
   password  String   @map("password")
@@ -52,7 +52,7 @@ model Comments {
   commentId Int      @id @default(autoincrement()) @map("commentId")
   UserId Int @map("UserId") // 사용자는 여러개의 게시글을 가질수있기 떄문에 유니크를 제외 
   postId    Int      @map("postId")
-  user      String   @map("user")
+  nickname      String   @map("nickname")
   password  String   @map("password")
   content   String   @map("content") @db.Text
   createdAt DateTime @default(now()) @map("createdAt") 

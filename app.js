@@ -1,10 +1,15 @@
 import express from 'express';
-
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
+import logMiddleware from './middlewares/log.middleware.js';
+import routes from './routes/index.js';
 //import connect from './schmas/index.js';
 //import signRouter from './routes/sign.router.js';
 //import postRouter from './routes/post.router.js';
 // import commnetRouter from './routes/comments.router.js'
-import routes from './routes/index.js';
+import errorHandlingMiddleware from './middlewares/error-handling.middleware.js';
+
+
 const app = express();
 const PORT = 3000;
 
@@ -12,16 +17,18 @@ const PORT = 3000;
 
 // const router = express.Router();
 
-// Express에서 req.body에 접근하여 body 데이터를 사용할 수 있도록 설정합니다.
+//실행 할 미들웨어
+app.use(logMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-//app.use(cookieParser());
+app.use(cookieParser());
+app.use('/api', [routes.signRouter,routes.postRouter,routes.commnetRouter]);
+app.use(errorHandlingMiddleware)
 
 // app.use('/api', routes.commnetRouter);
 // app.use('/api',routes.postRouter);
 
-// 코멘트 라우터(맨) 앞에 미들웨어를 생성해서 걸러지게 만듬
-app.use('/api', [routes.signRouter,routes.postRouter,routes.commnetRouter]);
+
 
 app.listen(PORT, () => {
   console.log(PORT, '포트로 서버가 열렸어요!');

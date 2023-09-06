@@ -9,35 +9,38 @@ const router = express.Router();
 
 /** 회원가입 API **/
 router.post('/signup', async (req, res, next) => {
-  const { nickname, password, confirm } = req.body;
-  const isExistUser = await prisma.users.findFirst({
-    where: {
-        nickname,
-    },
-  });
-
-  if (isExistUser) {
-    return res.status(409).json({ message: '중복된 닉네임입니다.' });
-  }
-
-  if(password.length <=4 && password == nickname){
-    return res.status(409).json({ message: '회원가입에 실패하셨습니다.' });
-  }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const hashedConfirm = await bcrypt.hash(confirm, 10);
+try{
+    const { nickname, password, confirm } = req.body;
+    const isExistUser = await prisma.users.findFirst({
+      where: {
+          nickname,
+      },
+    });
   
-  // Users 테이블에 사용자를 추가합니다.
-  const user = await prisma.users.create({
-    data: {
-         nickname, 
-         password :hashedPassword,
-         confirm : hashedConfirm,
-        }
-
-  });
-
-  return res.status(201).json({ message: '회원가입이 완료되었습니다.' });
+    if (isExistUser) {
+      return res.status(409).json({ message: '중복된 닉네임입니다.' });
+    }
+  
+    if(password.length <=4 && password == nickname){
+      return res.status(409).json({ message: '회원가입에 실패하셨습니다.' });
+    }
+  
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedConfirm = await bcrypt.hash(confirm, 10);
+    
+    // Users 테이블에 사용자를 추가합니다.
+    const user = await prisma.users.create({
+      data: {
+           nickname, 
+           password :hashedPassword,
+           confirm : hashedConfirm,
+          }
+  
+    });
+  
+    return res.status(201).json({ message: '회원가입이 완료되었습니다.' });
+}catch(err){}
+  next(err);
 });
 
 /** 로그인 API **/
@@ -66,10 +69,11 @@ router.post('/signin', async (req, res, next) => {
   // authotization 쿠키에 Berer 토큰 형식으로 JWT를 저장합니다.
   res.cookie('authorization', `Bearer ${token}`);
   return res.status(200).json({ message: '로그인 성공' }); 
-  
+
 });
 
 
 
 export default router;
+
 
