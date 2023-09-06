@@ -17,11 +17,23 @@ router.post('/signup', async(req,res,next) =>{
 
     const {nickname,password,confirm} =req.body
   
-    if(!nickname){
-      res.status(401).json({message: `닉네임이 올바르지 않습니다.`})
+    // 닉네임이 동일한 사용자가 있는지 확인
+    const isExistUser = await prisma.users.findFirst({where : {nickname}})
+
+    if(!isExistUser){
+      res.status(409).json({message: `중복된 닉네임입니다.`})
     }
   
+    const user = await prisma.users.create({
+        data : {
+            nickname,
+            password,
+            confirm
+        }
+    })
   
+
+    return res.status(201).json({message : '회원가입이 완료되었습니다.'})
   })
   
   

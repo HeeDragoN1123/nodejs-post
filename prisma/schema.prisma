@@ -15,7 +15,7 @@ datasource db {
 //회원가입 테이블 정의
 model Users {
   userId Int @id @default(autoincrement()) @map("userId")
-  email String @unique @map("email")
+  nickname String @unique @map("nickname")
   password String @map("password")
   confirm String @map("confirm")
   createdAt DateTime @default(now()) @map("createdAt")

@@ -1,7 +1,7 @@
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import connect from './schmas/index.js';
-//import postRouter from './routes/post.router.js';
+// import postRouter from './routes/post.router.js';
 // import commnetRouter from './routes/comments.router.js'
 import routes from './routes/index.js';
 const app = express();
@@ -14,7 +14,7 @@ connect();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use('/api', [routes.postRouter,routes.commnetRouter]);
+app.use('/api', [routes.signRouter, routes.postRouter, routes.commnetRouter]);
 
 
 app.listen(PORT, () => {
