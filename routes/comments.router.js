@@ -3,10 +3,17 @@ import schemaComment from '../schmas/comments.schema.js';
 import { prisma } from '../utils/prisma/index.js';
 import { PrismaClientRustPanicError } from '@prisma/client/runtime/library.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
+import Joi from 'joi'
 
 //express.js 라우터 생성
 
 const router = express.Router();
+
+const re_comment = /^[a-zA-Z0-9]{1,2000}$/
+
+const commentSchema = Joi.object({
+  comment : Joi.string().required(),
+})
 
 /* 댓글 생성 API */
 
@@ -16,6 +23,16 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
     const { postId } = req.params;
     const { comment } = req.body;
 
+    // const commentText = req.body.comment; // req.body에서 "comment" 속성을 읽음
+    // console.log(`받은 댓글: ${commentText}`);
+    // res.send('댓글을 받았습니다.');
+
+    const resultSchema = commentSchema.validate(req.body);
+    if (resultSchema.error) {
+      return res.status(412).json({
+        errorMessage: '데이터 형식이 올바르지 않습니다.',
+      });
+    }
 
     const post = await prisma.posts.findFirst({where: {postId: +postId} });
 
@@ -36,12 +53,13 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
       },
     });
 
+
+
     res.status(201).json({ message: '댓글을 생성하였습니다.' });
   } catch (err) {
-    console.error(err);
-    return res
-      .status(400)
-      .json({ message: '데이터 형식이 올바르지 않습니다.' });
+      if (err instanceof ValidationError) {
+      return res.status(400).json({ errorMessage: '댓글 작성에 실패하셨습니다.' });
+    }
   }
 });
 
@@ -78,32 +96,43 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
 
     return res.status(200).json(cheakcomment);
   } catch (err) {
-    console.error(err);
-    return res
-      .status(400)
-      .send({ message: '데이터 형식이 올바르지 않습니다.' });
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ errorMessage: '댓글 작성에 실패하셨습니다.' });
+    }
   }
 });
 
 /* 댓글 수정 */
 
-router.put('/posts/:postId/comments/:commentId', async (req, res, next) => {
+router.put('/posts/:postId/comments/:commentId',authMiddleware, async (req, res, next) => {
   try {
     const { postId,commentId } = req.params;
     const { comment } = req.body;
+    
+    const resultSchema = commentSchema.validate(req.body);
+    if (resultSchema.error) {
+      return res.status(412).json({
+        errorMessage: '데이터 형식이 올바르지 않습니다.',
+      });
+    }
 
     const editcomment = await prisma.Comments.findUnique({
       where: { commentId: +commentId },
     });
 
 
-    if (!comment) {
-      return res.status(400).json({ Message: '댓글 내용을 입력해주세요' });
+    if (!postId) {
+      return res.status(400).json({ Message: '게시글이 존재하지 않습니다.' });
     }
     if (!commentId) {
-      return res.status(404).json({ Message: '댓글 조회에 실패하였습니다.' });
+      return res.status(404).json({ Message: '댓글이 존재하지 않습니다.' });
+    }
+
+    if(editcomment.UserId !== userId){
+      return res.status(403).json({ errorMessage: '댓글 수정의 권한이 존재하지 않습니다.' });
     }
     
+
     await prisma.Comments.update({
       data: { comment },
       where: {
@@ -113,16 +142,17 @@ router.put('/posts/:postId/comments/:commentId', async (req, res, next) => {
 
     return res.status(200).json({ massege: '댓글이 수정되었습니다.' });
   } catch (err) {
-    console.error(err);
-    return res
-      .status(400)
-      .send({ message: '데이터 형식이 올바르지 않습니다.' });
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ errorMessage: '댓글 수정이 정상적으로 처리되지 않았습니다.' });
+    }else{
+      return res.status(500).json({ errorMessage: '댓글 수정에 실패하였습니다.' });
+    }
   }
 });
 
 /* 댓글 삭제 */
 
-router.delete('/posts/:_postId/comments/:commentId', async (req, res, next) => {
+router.delete('/posts/:_postId/comments/:commentId',authMiddleware, async (req, res, next) => {
   try {
     const { postId , commentId } = req.params;
 
@@ -132,10 +162,17 @@ router.delete('/posts/:_postId/comments/:commentId', async (req, res, next) => {
       },
     });
 
-    if (!commentId) {
-      return res.status(404).json({ message: '댓글 조회에 실패하였습니다.' });
+    if (!postId) {
+      return res.status(400).json({ Message: '게시글이 존재하지 않습니다.' });
     }
 
+    if (!commentId) {
+      return res.status(404).json({ message: '댓글이 존재하지 않습니다.' });
+    }
+
+    if(deletecomment.UserId !== userId){
+      return res.status(403).json({ errorMessage: '댓글 삭제 권한이 존재하지 않습니다.' });
+    }
 
     await prisma.Comments.delete({
       where: {
@@ -145,10 +182,11 @@ router.delete('/posts/:_postId/comments/:commentId', async (req, res, next) => {
 
     return res.status(200).json({ message: '댓글을 삭제하였습니다.' });
   } catch (err) {
-    console.error(err);
-    return res
-      .status(400)
-      .send({ message: '데이터 형식이 올바르지 않습니다.' });
+    if (err instanceof ValidationError) {
+      return res.status(400).json({ errorMessage: '댓글 삭제가 정상적으로 처리되지 않았습니다.' });
+    }else{
+      return res.status(500).json({ errorMessage: '댓글 삭제에 실패하였습니다.' });
+    }
   }
 });
 
