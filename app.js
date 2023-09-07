@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use('/api', [routes.signRouter,routes.postRouter,routes.commnetRouter]);
-app.use(errorHandlingMiddleware)
+app.use(errorHandlingMiddleware);
 
 // app.use('/api', routes.commnetRouter);
 // app.use('/api',routes.postRouter);

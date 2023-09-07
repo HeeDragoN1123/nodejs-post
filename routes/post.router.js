@@ -18,12 +18,6 @@ router.post('/posts', authMiddleware, async (req, res, next) => {
   }
   
 
-  // 질문 1  400 번 오류 위치  그리고 그럼 catch 에 무엇을 써야하는가?
-  // if(!postId||!user||!password){
-  //   return res.status(400).json({message : "데이터 형식이 올바르지 않습니다."})
-  // }
-
-
     const newPost = await prisma.posts.create({
       data: {
         UserId : userId, 
@@ -88,6 +82,7 @@ router.get('/posts/:postId', async (req, res, next) => {
     return res.status(201).json({ data: cheak1post });
   } catch (err) {
     console.error(err);
+
     return res
       .status(400)
       .json({ message: '데이터 형식이 올바르지 않습니다.' });
@@ -114,7 +109,7 @@ router.put('/posts/:postId', async (req, res, next) => {
       data: { title, content },
       where: {
         postId: +postId,
-       // password,
+        
       },
     });
 
@@ -138,7 +133,7 @@ router.delete('/posts/:postId', async (req, res, next) => {
     const deletepost = await prisma.posts.findUnique({
       where: {
         postId: +postId,
-        
+
       },
     });
 
