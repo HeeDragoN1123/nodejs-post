@@ -4,23 +4,64 @@ import express from 'express';
 import { prisma } from '../utils/prisma/index.js';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import Joi from 'joi'
 //import sign from '../middlewares/joi.js'
 
 const router = express.Router();
+
+const re_nickname =/^[a-zA-Z0-9]{3,15}$/;
+const re_password =/^[a-zA-Z0-9]{3,15}$/;
+
+const userSchema = Joi.object({
+  nickname: Joi.string().pattern(re_nickname).required(),
+  password: Joi.string().pattern(re_password).required(),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required(),
+});
 
 /** 회원가입 API **/
 router.post('/signup', async (req, res, next) => {
 try{
     const { nickname, password, confirm } = req.body;
+
+    const {error} = userSchema.validate({nickname, password , confirm});
+    
+    // if (error) {
+    //   const errorMessage = error.details[0].message;
+    //   return res.status(412).json({ errorMessage });
+    // }
+
+    if (!isRegexMatch(nickname, re_nickname)) {
+      return res.status(412).json({
+        errorMessage: '닉네임의 형식이 일치하지 않습니다.',
+      });
+    }
+    
+
+    if(!isRegexMatch(password, re_password)) {
+      return res.status(412).json({
+        errorMessage: '패스워드 형식이 일치하지 않습니다.'
+      })
+    }
+
+
     const isExistUser = await prisma.users.findFirst({
       where: {
           nickname,
       },
     });
-  
+
+
     if (isExistUser) {
       return res.status(409).json({ message: '중복된 닉네임입니다.' });
     }
+
+
+    if(password.includes(nickname)){
+      return res.status(412).json({ Message: '패드워드에 닉네임이 포함되어 있습니다.' });
+    }
+
+
+
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const hashedConfirm = await bcrypt.hash(confirm, 10);
@@ -34,10 +75,13 @@ try{
           }
   
     });
-  
+
     return res.status(201).json({ message: '회원가입이 완료되었습니다.' });
-}catch(err){}
+}catch(err){
   next(err);
+  //return res.status(400).json({ Message: '요청한 데이터 형식이 올바르지 않습니다.' });
+}
+ 
 });
 
 /** 로그인 API **/

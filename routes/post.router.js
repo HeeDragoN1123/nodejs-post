@@ -13,10 +13,20 @@ router.post('/posts', authMiddleware, async (req, res, next) => {
 
     const { title, content } = req.body;
     
-    if(!content){
-      return res.status(400).json({message : "댓글 내용을 입력해주세요"})
-  }
-  
+//     # 412 body 데이터가 정상적으로 전달되지 않는 경우
+// {"errorMessage": "데이터 형식이 올바르지 않습니다."}
+// # 412 Title의 형식이 비정상적인 경우
+// {"errorMessage": "게시글 제목의 형식이 일치하지 않습니다."}
+// # 412 Content의 형식이 비정상적인 경우
+// {"errorMessage": "게시글 내용의 형식이 일치하지 않습니다."}
+// # 403 Cookie가 존재하지 않을 경우
+// {"errorMessage": "로그인이 필요한 기능입니다."}
+// # 403 Cookie가 비정상적이거나 만료된 경우
+// {"errorMessage": "전달된 쿠키에서 오류가 발생하였습니다."}
+// # 400 예외 케이스에서 처리하지 못한 에러
+// {"errorMessage": "게시글 작성에 실패하였습니다."}
+
+
 
     const newPost = await prisma.posts.create({
       data: {
@@ -52,6 +62,11 @@ router.get('/posts', async (req, res, next) => {
       title: true,
       createdAt: true,
       updatedAt: true,
+      User : {
+        select : {
+          nickname : true,
+        }
+      }
     },
     orderBy: {
       createdAt: 'desc', // createdAt을 내림차순으로 정렬
