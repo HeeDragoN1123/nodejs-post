@@ -2,11 +2,11 @@ import express from 'express';
 import authMiddleware from '../middlewares/auth.middleware.js';
 import { prisma } from '../utils/prisma/index.js';
 import Joi from 'joi'
-
+import { isRegexMatch } from '../utils/regex.helper.js';
 const router = express.Router();
 
-const re_title = /^[a-zA-Z0-9]{2,30}$/;
-const re_content = /^[a-zA-Z0-9]{1,5000}$/;
+const re_title = /^[a-zA-Z0-9가-힣\s.!?]{2,30}$/; //영문 대소문자, 숫자, 한글, 공백, 마침표, 느낌표, 물음표를 포함
+const re_content =/^[a-zA-Z0-9가-힣\s.!?]{1,5000}$/; //영문 대소문자, 숫자, 한글, 공백, 마침표, 느낌표, 물음표를 포함
 
 const postSchema = Joi.object({
   title : Joi.string().pattern(re_title).required(),
@@ -20,23 +20,18 @@ router.post('/posts', authMiddleware, async (req, res, next) => {
     const { userId, nickname } = req.user;
 
     const { title, content } = req.body;
-
     
-//     # 412 body 데이터가 정상적으로 전달되지 않는 경우
-// {"errorMessage": "데이터 형식이 올바르지 않습니다."}
-// # 412 Title의 형식이 비정상적인 경우
-// {"errorMessage": "게시글 제목의 형식이 일치하지 않습니다."}
-// # 412 Content의 형식이 비정상적인 경우
-// {"errorMessage": "게시글 내용의 형식이 일치하지 않습니다."}
-// # 403 Cookie가 존재하지 않을 경우
-// {"errorMessage": "로그인이 필요한 기능입니다."}
-// # 403 Cookie가 비정상적이거나 만료된 경우
-// {"errorMessage": "전달된 쿠키에서 오류가 발생하였습니다."}
-// # 400 예외 케이스에서 처리하지 못한 에러
-// {"errorMessage": "게시글 작성에 실패하였습니다."}
 
+    const resultSchema = postSchema.validate(req.body);
+    if (resultSchema.error) {
+      //console.error('데이터 형식이 올바르지 않습니다.', resultSchema.error); // 콘솔에 에러 메시지 출력
+      return res.status(412).json({
+        errorMessage: '데이터 형식이 올바르지 않습니다.',
+      });
+    }
 
-if(!isRegexMatch(title, re_title)){
+    if (!isRegexMatch(title , re_title)){
+    //console.error('게시글 제목의 형식이 일치하지 않습니다.'); // 콘솔에 에러 메시지 출력
   return res.status(412).json({
     errorMessage: '게시글 제목의 형식이 일치하지 않습니다.',
   });
@@ -44,6 +39,7 @@ if(!isRegexMatch(title, re_title)){
 
 
 if (!isRegexMatch(content, re_content)) {
+  //console.error('게시글 내용의 형식이 일치하지 않습니다.'); // 콘솔에 에러 메시지 출력
   return res.status(412).json({
     errorMessage: '게시글 내용의 형식이 일치하지 않습니다.',
   });
@@ -67,13 +63,13 @@ if (!isRegexMatch(content, re_content)) {
     // res.status(201).json({newPost})
     res.status(201).json({ message: '개시글을 생성하였습니다' });
   } catch (err) {
-    console.error(err);
-    return res
-      .status(400)
-      .json({ message: '데이터 형식이 올바르지 않습니다.' });
+    if (err instanceof Error) {
+      return res.status(400).json({ errorMessage: '데이터 형식이 올바르지 않습니다.' });
+    } else {
+      return res.status(500).json({ errorMessage: '게시글 작성에 실패하였습니다.' });
+    }
   }
 });
-
 
 
 /* 게시판 목록 조회 */
@@ -100,6 +96,8 @@ router.get('/posts', async (req, res, next) => {
   return res.status(200).json({ data: cheakpost });
 });
 
+
+
 /* 게시글 상세 조회 */
 router.get('/posts/:postId',authMiddleware, async (req, res, next) => {
   try {
@@ -120,10 +118,10 @@ router.get('/posts/:postId',authMiddleware, async (req, res, next) => {
 
     return res.status(201).json({ data: cheak1post });
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof Error) {
       return res.status(400).json({ errorMessage: '데이터 형식이 올바르지 않습니다.' });
     } else {
-      return res.status(500).json({ errorMessage: '게시글 작성에 실패하였습니다.' });
+      return res.status(500).json({ errorMessage: '게시글 조회에 실패하였습니다.' });
     }
   }
 });
@@ -135,6 +133,9 @@ router.put('/posts/:postId',authMiddleware, async (req, res, next) => {
     const {userId} = req.user;
     const { title, content } = req.body;
 
+    //   const editText = req.body; // req.body에서 "comment" 속성을 읽음
+    // console.log(`받은 게시글: ${editText}`);
+    // res.send('게시글을 받았습니다.');
 
     if(!isRegexMatch(title, re_title)){
       return res.status(412).json({
@@ -172,7 +173,7 @@ router.put('/posts/:postId',authMiddleware, async (req, res, next) => {
 
     return res.status(200).json({ message: '게시글이 수정되었습니다.' });
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof Error) {
       return res.status(400).json({ errorMessage: '데이터 형식이 올바르지 않습니다.' });
     } else {
       return res.status(500).json({ errorMessage: '게시글 수정에 실패하였습니다.' });
@@ -215,7 +216,7 @@ router.delete('/posts/:postId',authMiddleware, async (req, res, next) => {
 
     return res.status(200).json({ message: '게시글을 삭제하였습니다.' });
   } catch (err){
-    if (err instanceof ValidationError) {
+    if (err instanceof Error) {
       return res.status(400).json({ errorMessage: '게시글이 정상적으로 삭제되지 않았습니다.' });
     } else {
       return res.status(500).json({ errorMessage: '게시글 수정에 실패하였습니다.' });

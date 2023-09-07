@@ -1,15 +1,17 @@
 import express from 'express';
 import schemaComment from '../schmas/comments.schema.js';
 import { prisma } from '../utils/prisma/index.js';
-import { PrismaClientRustPanicError } from '@prisma/client/runtime/library.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 import Joi from 'joi'
+
+
+
 
 //express.js 라우터 생성
 
 const router = express.Router();
 
-const re_comment = /^[a-zA-Z0-9]{1,2000}$/
+const re_comment = /^[a-zA-Z0-9가-힣\s.!?]{1,2000}$/
 
 const commentSchema = Joi.object({
   comment : Joi.string().required(),
@@ -57,7 +59,7 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
 
     res.status(201).json({ message: '댓글을 생성하였습니다.' });
   } catch (err) {
-      if (err instanceof ValidationError) {
+      if (err instanceof Error) {
       return res.status(400).json({ errorMessage: '댓글 작성에 실패하셨습니다.' });
     }
   }
@@ -70,7 +72,6 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
 router.get('/posts/:postId/comments', async (req, res, next) => {
   try {
     const {postId} = req.params;
-
     const post = await prisma.posts.findFirst({
       where :{postId : +postId}
     });
@@ -96,8 +97,8 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
 
     return res.status(200).json(cheakcomment);
   } catch (err) {
-    if (err instanceof ValidationError) {
-      return res.status(400).json({ errorMessage: '댓글 작성에 실패하셨습니다.' });
+    if (err instanceof Error) {
+      return res.status(400).json({ errorMessage: '댓글 조회에 실패하셨습니다.' });
     }
   }
 });
@@ -107,6 +108,7 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
 router.put('/posts/:postId/comments/:commentId',authMiddleware, async (req, res, next) => {
   try {
     const { postId,commentId } = req.params;
+    const {userId} =req.user;
     const { comment } = req.body;
     
     const resultSchema = commentSchema.validate(req.body);
@@ -142,7 +144,8 @@ router.put('/posts/:postId/comments/:commentId',authMiddleware, async (req, res,
 
     return res.status(200).json({ massege: '댓글이 수정되었습니다.' });
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof Error) {
+      // console.error('콘솔에러 .'); // 콘솔에 에러 메시지 출력
       return res.status(400).json({ errorMessage: '댓글 수정이 정상적으로 처리되지 않았습니다.' });
     }else{
       return res.status(500).json({ errorMessage: '댓글 수정에 실패하였습니다.' });
@@ -152,21 +155,20 @@ router.put('/posts/:postId/comments/:commentId',authMiddleware, async (req, res,
 
 /* 댓글 삭제 */
 
-router.delete('/posts/:_postId/comments/:commentId',authMiddleware, async (req, res, next) => {
+router.delete('/posts/:postId/comments/:commentId',authMiddleware, async (req, res, next) => {
   try {
     const { postId , commentId } = req.params;
-
+    const {userId} = req.user;
     const deletecomment = await prisma.Comments.findUnique({
-      where: {
-        commentId: +commentId,
-      },
+      where: { 
+        commentId: +commentId },
     });
 
     if (!postId) {
       return res.status(400).json({ Message: '게시글이 존재하지 않습니다.' });
     }
 
-    if (!commentId) {
+    if (!deletecomment) {
       return res.status(404).json({ message: '댓글이 존재하지 않습니다.' });
     }
 
@@ -182,7 +184,7 @@ router.delete('/posts/:_postId/comments/:commentId',authMiddleware, async (req, 
 
     return res.status(200).json({ message: '댓글을 삭제하였습니다.' });
   } catch (err) {
-    if (err instanceof ValidationError) {
+    if (err instanceof Error) {
       return res.status(400).json({ errorMessage: '댓글 삭제가 정상적으로 처리되지 않았습니다.' });
     }else{
       return res.status(500).json({ errorMessage: '댓글 삭제에 실패하였습니다.' });
