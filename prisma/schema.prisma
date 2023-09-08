@@ -17,7 +17,6 @@ model Users {
   userId Int @id @default(autoincrement()) @map("userId")
   nickname String @unique @map("nickname")
   password String @map("password")
-  confirm String @map("confirm")
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
@@ -36,7 +35,6 @@ model Posts {
   nickname   String   @map("nickname")
   title     String   @map("title")
   content   String   @map("content") @db.Text
- // password  String   @map("password")
   createdAt DateTime @default(now()) @map("createdAt")
   updatedAt DateTime @updatedAt @map("updatedAt")
 
