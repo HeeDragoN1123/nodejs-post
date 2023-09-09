@@ -44,6 +44,7 @@ model Posts {
   @@map("Posts")
 }
 
+
 // 코멘트 테이블 정의
 
 model Comments {
