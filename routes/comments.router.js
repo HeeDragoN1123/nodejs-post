@@ -46,7 +46,7 @@ router.post('/posts/:postId/comments',authMiddleware, async (req, res, next) => 
     const newComment = await prisma.Comments.create({
       data: {
         UserId : +userId, 
-        postId: +postId,
+        PostId: +postId,
         nickname,
         comment,
         createdAt: new Date(),
@@ -81,7 +81,7 @@ router.get('/posts/:postId/comments', async (req, res, next) => {
     }
 
     const cheakcomment = await prisma.Comments.findMany({
-      where : {postId : +postId},
+      where : {PostId : +postId},
       select: {
         commentId: true,
         UserId : true, 

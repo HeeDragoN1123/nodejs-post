@@ -86,7 +86,12 @@ router.get('/posts', async (req, res, next) => {
         select : {
           nickname : true,
         }
-      }
+      },
+      _count: {
+        select: {
+          Likes: true,
+        },
+      },
     },
     orderBy: {
       createdAt: 'desc', // createdAt을 내림차순으로 정렬

@@ -18,11 +18,12 @@ const PORT = 3000;
 // const router = express.Router();
 
 //실행 할 미들웨어
-// app.use(logMiddleware);
+ app.use(logMiddleware);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use('/api', [routes.signRouter,routes.postRouter,routes.commnetRouter]);
+//app.use('/api', [routes.signRouter,routes.postRouter,routes.likeRouter,routes.commnetRouter]);
+app.use('/api', [routes.signRouter, routes.postRouter, routes.commnetRouter, routes.likeRouter]);
 app.use(errorHandlingMiddleware);
 
 // app.use('/api', routes.commnetRouter);
